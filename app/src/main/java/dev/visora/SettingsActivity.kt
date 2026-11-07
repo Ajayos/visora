@@ -111,6 +111,10 @@ class SettingsActivity : Activity() {
         panel.removeAllViews()
         text("VISORA / Settings", 26f)
         text("Remote shortcuts: Menu opens controls; Rewind replays only the introduction.", 11f)
+        button("Open Casting / AirScreen") {
+            CastingController(this).launch()
+            finish()
+        }
         text("Screen sizing", 20f)
         button("Adjust screen edges with remote") {
             startActivity(Intent(this, DisplayCalibrationActivity::class.java))
@@ -136,10 +140,6 @@ class SettingsActivity : Activity() {
             "Sizing applies on return. Reduce dimensions to compensate for television overscan; disable aspect preservation to stretch.",
             11f,
         )
-        button("Open Casting / AirScreen") {
-            CastingController(this).launch()
-            finish()
-        }
         button("Replay Intro Animation") {
             setResult(RESULT_OK, Intent().putExtra("replay", true))
             finish()
