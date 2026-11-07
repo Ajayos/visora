@@ -1,0 +1,85 @@
+--- a/src/common-session.c
++++ b/src/common-session.c
+@@ -671,7 +671,21 @@
+ 	ses.authstate.pw_uid = pw->pw_uid;
+ 	ses.authstate.pw_gid = pw->pw_gid;
+ 	ses.authstate.pw_name = m_strdup(pw->pw_name);
+-	ses.authstate.pw_dir = m_strdup(pw->pw_dir);
++#ifdef __ANDROID__
++    /* Bionic app UIDs have no per-app passwd home. Preserve ownership checks
++     * by accepting only this UID's non-group/world-writable private directory. */
++    const char *apphome = getenv("VISORA_SSH_HOME");
++    struct stat home_stat;
++    if (getuid() != 0 && pw->pw_uid == geteuid() && apphome && apphome[0] == '/'
++            && stat(apphome, &home_stat) == 0 && S_ISDIR(home_stat.st_mode)
++            && home_stat.st_uid == pw->pw_uid && !(home_stat.st_mode & (S_IWGRP|S_IWOTH))) {
++        ses.authstate.pw_dir = m_strdup(apphome);
++    } else {
++        ses.authstate.pw_dir = m_strdup(pw->pw_dir);
++    }
++#else
++    ses.authstate.pw_dir = m_strdup(pw->pw_dir);
++#endif
+ 	ses.authstate.pw_shell = m_strdup(pw->pw_shell);
+ 	{
+ 		char *passwd_crypt = pw->pw_passwd;
+--- a/src/svr-authpubkey.c
++++ b/src/svr-authpubkey.c
+@@ -498,10 +498,18 @@
+ 	/* access the file as the authenticating user. */
+ 	origuid = getuid();
+ 	origgid = getgid();
++#ifdef __ANDROID__
++    /* App seccomp forbids setresgid even for an unchanged ID. Never switch
++     * identity: this server authenticates only its existing app UID/GID. */
++    if (origuid != ses.authstate.pw_uid || origgid != ses.authstate.pw_gid) {
++        dropbear_exit("Android app SSH refuses identity change");
++    }
++#else
+ 	if ((setegid(ses.authstate.pw_gid)) < 0 ||
+ 		(seteuid(ses.authstate.pw_uid)) < 0) {
+ 		dropbear_exit("Failed to set euid");
+ 	}
++#endif /* __ANDROID__ */
+ #endif
+ 	/* check file permissions, also whether file exists */
+ 	if (checkpubkeyperms() == DROPBEAR_FAILURE) {
+@@ -523,7 +531,7 @@
+ 			TRACE(("checkpubkey: failed opening %s: %s", filename, strerror(errno)))
+ 		}
+ 	}
+-#if DROPBEAR_SVR_MULTIUSER
++#if DROPBEAR_SVR_MULTIUSER && !defined(__ANDROID__)
+ 	if ((seteuid(origuid)) < 0 ||
+ 		(setegid(origgid)) < 0) {
+ 		dropbear_exit("Failed to revert euid");
+--- a/src/sshpty.c
++++ b/src/sshpty.c
+@@ -247,6 +247,11 @@
+ void
+ pty_release(const char *tty_name)
+ {
++#ifdef __ANDROID__
++    /* Android's devpts owns lifecycle/permissions; never chown to root or chmod world-writable. */
++    (void)tty_name;
++    return;
++#endif
+ 	if (chown(tty_name, (uid_t) 0, (gid_t) 0) < 0
+ 			&& (errno != ENOENT)) {
+ 		dropbear_log(LOG_ERR,
+@@ -379,6 +384,15 @@
+ 		dropbear_exit("pty_setowner: stat(%.101s) failed: %.100s",
+ 				tty_name, strerror(errno));
+ 	}
++
++#ifdef __ANDROID__
++    /* App-created PTYs already have kernel-managed access. Require ownership
++     * and no world access; do not attempt forbidden chmod/chown operations. */
++    if (getuid() != pw->pw_uid || st.st_uid != pw->pw_uid || (st.st_mode & (S_IRWXO))) {
++        dropbear_exit("Android PTY ownership/mode rejected");
++    }
++    return;
++#endif
+ 
+ 	/* Allow either "tty" gid or user's own gid. On Linux with openpty()
+ 	 * this varies depending on the devpts mount options */
