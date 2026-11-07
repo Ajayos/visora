@@ -48,7 +48,7 @@ class MainActivity : Activity() {
     override fun onCreate(state: Bundle?) {
         super.onCreate(state)
         DisplayManager(this).immersive()
-        root = FrameLayout(this)
+        root = FrameLayout(this).apply { setBackgroundColor(Color.BLACK) }
         setContentView(root)
         appliedConfig = configuration()
         scene =
@@ -59,6 +59,7 @@ class MainActivity : Activity() {
                 .apply {
                     id = View.generateViewId()
                     isFocusable = true
+                    defaultFocusHighlightEnabled = false
                     contentDescription =
                         "Animated AOS screen with Deluper branding and live system console"
                 }

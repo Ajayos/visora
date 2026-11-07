@@ -59,7 +59,7 @@ jobs:
       - name: Check Kotlin formatting
         run: ./scripts/format.sh --dry-run --set-exit-if-changed
       - name: Verify and package
-        run: ./gradlew --no-daemon testDebugUnitTest testReleaseUnitTest lintDebug lintRelease assembleDebug assembleRelease --console=plain
+        run: ./gradlew --no-daemon testDebugUnitTest testReleaseUnitTest lintDebug lintRelease assembleDebug assembleDebugAndroidTest assembleRelease --console=plain
       - name: Prepare APKs and checksums
         shell: bash
         run: |

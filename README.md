@@ -37,7 +37,7 @@ adb -s "$VISORA_DEVICE" install -r app/build/outputs/apk/debug/app-debug.apk
 adb -s "$VISORA_DEVICE" shell am start -n dev.visora.tv/dev.visora.MainActivity
 ```
 
-Open **Menu → Screen sizing** to adjust width, height, and aspect fitting. Weather starts unconfigured; choose a location in settings. VPN consent and external application setup must be completed interactively when required. Boot and background behavior depend on the host OS and installed applications; the app does not replace firmware boot graphics or require root.
+Open **Menu → Screen sizing → Adjust screen edges with remote** for a full-screen calibration guide. Use left/right for width, up/down for height, Select for aspect mode, Menu to reset, and Back to save. Dimensions change in 1% steps. Weather starts unconfigured; choose a location in settings. VPN consent and external application setup must be completed interactively when required. Boot and background behavior depend on the host OS and installed applications; the app does not replace firmware boot graphics or require root.
 
 ## APK releases
 

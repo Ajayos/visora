@@ -13,6 +13,7 @@
             <intent-filter><action android:name="android.intent.action.MAIN" /><category android:name="android.intent.category.LAUNCHER" /><category android:name="android.intent.category.LEANBACK_LAUNCHER" /></intent-filter>
             <intent-filter><action android:name="android.intent.action.MAIN" /><category android:name="android.intent.category.HOME" /><category android:name="android.intent.category.DEFAULT" /></intent-filter>
         </activity>
+        <activity android:name=".DisplayCalibrationActivity" android:exported="false" android:screenOrientation="landscape" />
         <activity android:name=".SettingsActivity" android:exported="false" android:screenOrientation="landscape" />
         <receiver android:name=".BootReceiver" android:exported="false"><intent-filter><action android:name="android.intent.action.BOOT_COMPLETED" /><action android:name="android.intent.action.MY_PACKAGE_REPLACED" /></intent-filter></receiver>
         <service android:name=".ManagementService" android:exported="false" />

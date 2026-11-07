@@ -33,6 +33,11 @@ class SettingsActivity : Activity() {
         build()
     }
 
+    override fun onResume() {
+        super.onResume()
+        if (::panel.isInitialized) build()
+    }
+
     private fun text(value: String, size: Float = 15f) {
         panel.addView(
             TextView(this).apply {
@@ -106,6 +111,31 @@ class SettingsActivity : Activity() {
         panel.removeAllViews()
         text("VISORA / Settings", 26f)
         text("Remote shortcuts: Menu opens controls; Rewind replays only the introduction.", 11f)
+        text("Screen sizing", 20f)
+        button("Adjust screen edges with remote") {
+            startActivity(Intent(this, DisplayCalibrationActivity::class.java))
+        }
+        button("Reset screen to automatic fit") {
+            settings.displayWidth = 100
+            settings.displayHeight = 100
+            settings.displayFit = true
+            build()
+        }
+        toggle("Preserve 16:9 composition", settings.displayFit) { settings.displayFit = it }
+        button("Display width: ${settings.displayWidth}%") {
+            choose("Display width", arrayOf("70%", "80%", "85%", "90%", "95%", "100%")) {
+                settings.displayWidth = intArrayOf(70, 80, 85, 90, 95, 100)[it]
+            }
+        }
+        button("Display height: ${settings.displayHeight}%") {
+            choose("Display height", arrayOf("70%", "80%", "85%", "90%", "95%", "100%")) {
+                settings.displayHeight = intArrayOf(70, 80, 85, 90, 95, 100)[it]
+            }
+        }
+        text(
+            "Sizing applies on return. Reduce dimensions to compensate for television overscan; disable aspect preservation to stretch.",
+            11f,
+        )
         button("Open Casting / AirScreen") {
             CastingController(this).launch()
             finish()
@@ -148,22 +178,6 @@ class SettingsActivity : Activity() {
             }
         }
         toggle("24-hour clock", settings.clock24) { settings.clock24 = it }
-        text("Screen sizing", 20f)
-        toggle("Preserve 16:9 composition", settings.displayFit) { settings.displayFit = it }
-        button("Display width: ${settings.displayWidth}%") {
-            choose("Display width", arrayOf("70%", "80%", "85%", "90%", "95%", "100%")) {
-                settings.displayWidth = intArrayOf(70, 80, 85, 90, 95, 100)[it]
-            }
-        }
-        button("Display height: ${settings.displayHeight}%") {
-            choose("Display height", arrayOf("70%", "80%", "85%", "90%", "95%", "100%")) {
-                settings.displayHeight = intArrayOf(70, 80, 85, 90, 95, 100)[it]
-            }
-        }
-        text(
-            "Sizing applies on return. Reduce dimensions to compensate for television overscan; disable aspect preservation to stretch.",
-            11f,
-        )
         text("Weather", 20f)
         button("Provider: ${settings.weatherProvider}") {
             choose("Weather provider", arrayOf("Open-Meteo", "AOS Core configured feed")) {

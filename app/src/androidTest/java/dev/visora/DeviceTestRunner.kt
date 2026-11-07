@@ -8,12 +8,14 @@ import org.json.JSONObject
 
 /** Device-only integration tests; all cache fixtures live in the TEST APK's private data. */
 class DeviceTestRunner : Instrumentation() {
+    private var calibration = false
     private var background = false
     private var cinematic = false
     private var inspect = false
 
     override fun onCreate(arguments: Bundle?) {
         super.onCreate(arguments)
+        calibration = arguments?.getString("calibration") == "true"
         background = arguments?.getString("background") == "true"
         inspect = arguments?.getString("inspect") == "true"
         cinematic = arguments?.getString("cinematic") == "true"
@@ -21,6 +23,16 @@ class DeviceTestRunner : Instrumentation() {
     }
 
     override fun onStart() {
+        if (calibration) {
+            val outcome = runCatching { CalibrationDeviceChecks.run(this) }
+            finish(
+                if (outcome.isSuccess) Activity.RESULT_OK else Activity.RESULT_CANCELED,
+                Bundle().apply {
+                    putString("stream", outcome.getOrElse { "FAIL: ${it.stackTraceToString()}" })
+                },
+            )
+            return
+        }
         if (background) {
             val outcome = runCatching { BackgroundDeviceChecks.run(this) }
             finish(

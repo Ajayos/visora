@@ -10,8 +10,8 @@ android {
         applicationId = "dev.visora.tv"
         minSdk = 28
         targetSdk = 28 // Dedicated Fire OS 7 deployment; reassess before Appstore distribution.
-        versionCode = 5
-        versionName = "0.5.0"
+        versionCode = 6
+        versionName = "0.5.1"
         testInstrumentationRunner = "dev.visora.DeviceTestRunner"
         ndk { abiFilters += "armeabi-v7a" }
     }
